@@ -2,12 +2,14 @@ package cn.iwgang.countdownviewdemo;
 
 import android.content.Context;
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -114,12 +116,15 @@ public class RecyclerViewActivity extends AppCompatActivity {
         }
 
         public void refreshTime(long leftTime) {
-            if (leftTime > 0) {
-                mCvCountdownView.start(leftTime);
-            } else {
-                mCvCountdownView.stop();
-                mCvCountdownView.allShowZero();
-            }
+
+            Log.d("CountDoen", "leftTime:" + leftTime + ",   getAdapterPosition()" + getAdapterPosition());
+            mCvCountdownView.start(leftTime);
+//            if (leftTime > 0) {
+//                mCvCountdownView.start(leftTime);
+//            } else {
+//                mCvCountdownView.stop();
+//                mCvCountdownView.allShowZero();
+//            }
         }
 
         public ItemInfo getBean() {

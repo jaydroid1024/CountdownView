@@ -16,6 +16,7 @@ public class CountdownView extends View {
     private BaseCountdown mCountdown;
     private CustomCountDownTimer mCustomCountDownTimer;
     private OnCountdownEndListener mOnCountdownEndListener;
+    private OnCountUpListener mOnCountUpListener;
     private OnCountdownIntervalListener mOnCountdownIntervalListener;
 
     private boolean isHideTimeBackground;
@@ -107,7 +108,6 @@ public class CountdownView extends View {
      * @param millisecond millisecond
      */
     public void start(long millisecond) {
-        if (millisecond <= 0) return;
 
         mPreviousIntervalCallbackTime = 0;
 
@@ -197,6 +197,7 @@ public class CountdownView extends View {
 
     /**
      * set countdown end callback listener
+     *
      * @param onCountdownEndListener OnCountdownEndListener
      */
     public void setOnCountdownEndListener(OnCountdownEndListener onCountdownEndListener) {
@@ -204,8 +205,18 @@ public class CountdownView extends View {
     }
 
     /**
+     * set count up  callback listener
+     *
+     * @param onCountUpListener OnCountUpListener
+     */
+    public void setOnCountUpListener(OnCountUpListener onCountUpListener) {
+        mOnCountUpListener = onCountUpListener;
+    }
+
+    /**
      * set interval callback listener
-     * @param interval interval time
+     *
+     * @param interval                    interval time
      * @param onCountdownIntervalListener OnCountdownIntervalListener
      */
     public void setOnCountdownIntervalListener(long interval, OnCountdownIntervalListener onCountdownIntervalListener) {
@@ -254,10 +265,17 @@ public class CountdownView extends View {
     }
 
     public void updateShow(long ms) {
+
+        // 支持倒计时超时
+        if (ms < 0) {
+            if (mOnCountUpListener != null) {
+                mOnCountUpListener.onUp(CountdownView.this);
+            }
+            ms = Math.abs(ms);
+        }
+
         this.mRemainTime = ms;
-
         reSetTime(ms);
-
         // interval callback
         if (mInterval > 0 && null != mOnCountdownIntervalListener) {
             if (mPreviousIntervalCallbackTime == 0) {
@@ -286,23 +304,16 @@ public class CountdownView extends View {
             hour = (int) (ms / (1000 * 60 * 60));
         }
 
-        int minute = (int)((ms % (1000 * 60 * 60)) / (1000 * 60));
-        int second = (int)((ms % (1000 * 60)) / 1000);
-        int millisecond = (int)(ms % 1000);
+        int minute = (int) ((ms % (1000 * 60 * 60)) / (1000 * 60));
+        int second = (int) ((ms % (1000 * 60)) / 1000);
+        int millisecond = (int) (ms % 1000);
 
         mCountdown.setTimes(day, hour, minute, second, millisecond);
     }
 
-    public interface OnCountdownEndListener {
-        void onEnd(CountdownView cv);
-    }
-
-    public interface OnCountdownIntervalListener {
-        void onInterval(CountdownView cv, long remainTime);
-    }
-
     /**
      * Dynamic show
+     *
      * @param dynamicConfig DynamicConfig
      */
     public void dynamicShow(DynamicConfig dynamicConfig) {
@@ -382,7 +393,7 @@ public class CountdownView extends View {
         Float suffixSecondRightMargin = dynamicConfig.getSuffixSecondRightMargin();
         Float suffixMillisecondRightMargin = dynamicConfig.getSuffixMillisecondLeftMargin();
         if (mCountdown.setSuffixMargin(suffixDayLeftMargin, suffixDayRightMargin, suffixHourLeftMargin, suffixHourRightMargin,
-                                       suffixMinuteLeftMargin, suffixMinuteRightMargin, suffixSecondLeftMargin, suffixSecondRightMargin, suffixMillisecondRightMargin)) {
+                suffixMinuteLeftMargin, suffixMinuteRightMargin, suffixSecondLeftMargin, suffixSecondRightMargin, suffixMillisecondRightMargin)) {
             isReLayout = true;
         }
 
@@ -502,6 +513,18 @@ public class CountdownView extends View {
         } else if (isInvalidate) {
             invalidate();
         }
+    }
+
+    public interface OnCountdownEndListener {
+        void onEnd(CountdownView cv);
+    }
+
+    public interface OnCountdownIntervalListener {
+        void onInterval(CountdownView cv, long remainTime);
+    }
+
+    public interface OnCountUpListener {
+        void onUp(CountdownView cv);
     }
 
 }

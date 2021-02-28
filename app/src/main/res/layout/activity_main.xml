@@ -208,23 +208,40 @@
             app:timeTextColor="#000000"
             app:timeTextSize="22sp"/>
 
-        <cn.iwgang.countdownview.CountdownView
-            android:id="@+id/cv_countdownViewTest6"
-            android:layout_width="120dp"
-            android:layout_height="40dp"
-            android:layout_gravity="center_horizontal"
-            android:layout_marginTop="20dp"
-            android:background="@drawable/sel_btn"
-            app:isShowDay="false"
-            app:isShowHour="true"
-            app:isShowMillisecond="false"
-            app:isShowMinute="true"
-            app:isShowSecond="true"
-            app:suffixGravity="center"
-            app:suffixTextColor="#000000"
-            app:suffixTextSize="20sp"
-            app:timeTextColor="#000000"
-            app:timeTextSize="20sp"/>
+        <LinearLayout
+            android:orientation="horizontal"
+            android:gravity="center"
+            android:layout_width="match_parent"
+            android:layout_height="40dp">
+
+            <TextView
+                android:id="@+id/tv_time_label"
+                android:text="剩余时间："
+                android:textSize="33sp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+
+            <cn.iwgang.countdownview.CountdownView
+                android:id="@+id/cv_countdownViewTest6"
+                android:layout_width="120dp"
+                android:layout_height="40dp"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="20dp"
+                android:background="@drawable/sel_btn"
+                app:isShowDay="false"
+                app:isShowHour="true"
+                app:isShowMillisecond="false"
+                app:isShowMinute="true"
+                app:isShowSecond="true"
+                app:suffixGravity="center"
+                app:suffixTextColor="#000000"
+                app:suffixTextSize="20sp"
+                app:timeTextColor="#000000"
+                app:timeTextSize="20sp"/>
+
+        </LinearLayout>
+
+
 
 
         <LinearLayout
@@ -275,7 +292,7 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:gravity="center"
-                android:text="ListView"/>
+                android:text="ListView" />
 
             <Button
                 android:id="@+id/btn_toRecyclerViewActivity"
@@ -283,9 +300,24 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:gravity="center"
-                android:text="RecyclerView"/>
+                android:text="RecyclerView" />
+
+            <Button
+                android:id="@+id/btn_toTimerVTestiewActivity"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:text="TimerVTest" />
 
         </LinearLayout>
+
+        <TextView
+            android:id="@+id/tv_info"
+            android:textSize="22sp"
+            android:text="ceshi"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent" />
 
     </LinearLayout>
 </ScrollView>

@@ -1,12 +1,12 @@
 apply plugin: 'com.android.library'
 
 android {
-    compileSdkVersion 21
-    buildToolsVersion '25.0.2'
+    compileSdkVersion 30
+    buildToolsVersion "30.0.3"
 
     defaultConfig {
-        minSdkVersion 10
-        targetSdkVersion 21
+        minSdkVersion 21
+        targetSdkVersion 30
         versionCode 1
         versionName "1.0"
     }
@@ -20,6 +20,7 @@ android {
 }
 
 dependencies {
+implementation 'androidx.appcompat:appcompat:1.2.0'
 }
 
 apply from: './build_push_maven.gradle'

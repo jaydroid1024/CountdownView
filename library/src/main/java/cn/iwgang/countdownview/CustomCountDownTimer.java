@@ -10,6 +10,13 @@ import android.os.SystemClock;
  * 2. 添加了一些自定义方法
  * Created by iWgang on 15/10/18.
  * https://github.com/iwgang/CountdownView
+ * <p>
+ * <p>
+ * System.currentTimeMillis()  系统时间，也就是日期时间，可以被系统设置修改，然后值就会发生跳变。
+ * <p>
+ * SystemClock.uptimeMillis() 自开机后，经过的时间，不包括深度睡眠的时间
+ * <p>
+ * SystemClock.elapsedRealtime() 自开机后，经过的时间，包括深度睡眠的时间
  */
 public abstract class CustomCountDownTimer {
     private static final int MSG = 1;
@@ -31,16 +38,29 @@ public abstract class CustomCountDownTimer {
         mCountdownInterval = countDownInterval;
     }
 
-    private synchronized CustomCountDownTimer start(long millisInFuture) {
-        isStop = false;
-        if (millisInFuture <= 0) {
-            onFinish();
-            return this;
+    private Handler mHandler = new Handler() {
+
+        @Override
+        public void handleMessage(Message msg) {
+
+            synchronized (CustomCountDownTimer.this) {
+                if (isStop || isPause) {
+                    return;
+                }
+                // 直到倒计时完成还剩余的总时间=未来的时间点-当前时间
+                final long millisLeft = mStopTimeInFuture - SystemClock.elapsedRealtime();
+                // 倒计时结束回调 onFinish
+                long lastTickDuration = getLastTickDuration(CustomCountDownTimer.this, millisLeft);
+                //计算延迟
+                long delay = getDelay(CustomCountDownTimer.this, millisLeft, lastTickDuration);
+                //开始下一次
+                //发送延迟消息准备下一次的 onTick
+                sendMessageDelayed(obtainMessage(MSG), delay);
+            }
+
+
         }
-        mStopTimeInFuture = SystemClock.elapsedRealtime() + millisInFuture;
-        mHandler.sendMessage(mHandler.obtainMessage(MSG));
-        return this;
-    }
+    };
 
     /**
      * 开始倒计时
@@ -90,34 +110,62 @@ public abstract class CustomCountDownTimer {
      */
     public abstract void onFinish();
 
+    private synchronized CustomCountDownTimer start(long millisInFuture) {
+        isStop = false;
+//        if (millisInFuture <= 0) {
+//            onFinish();
+//            return this;
+//        }
 
-    private Handler mHandler = new Handler() {
+        mStopTimeInFuture = SystemClock.elapsedRealtime() + millisInFuture;
+        mHandler.sendMessage(mHandler.obtainMessage(MSG));
+        return this;
+    }
 
-        @Override
-        public void handleMessage(Message msg) {
-
-            synchronized (CustomCountDownTimer.this) {
-                if (isStop || isPause) {
-                    return;
-                }
-
-                final long millisLeft = mStopTimeInFuture - SystemClock.elapsedRealtime();
-                if (millisLeft <= 0) {
-                    onFinish();
-                } else {
-                    long lastTickStart = SystemClock.elapsedRealtime();
-                    onTick(millisLeft);
-
-                    // take into account user's onTick taking time to execute
-                    long delay = lastTickStart + mCountdownInterval - SystemClock.elapsedRealtime();
-
-                    // special case: user's onTick took more than interval to
-                    // complete, skip to next interval
-                    while (delay < 0) delay += mCountdownInterval;
-
-                    sendMessageDelayed(obtainMessage(MSG), delay);
-                }
+    /**
+     * 计算满足下一次回调的延迟时间
+     *
+     * @param countDownTimer
+     * @param millisLeft
+     * @param lastTickDuration
+     * @return
+     */
+    private long getDelay(CustomCountDownTimer countDownTimer, long millisLeft, long lastTickDuration) {
+        long delay;
+        long millisLeftAbs = Math.abs(millisLeft);
+        if (millisLeftAbs < countDownTimer.mCountdownInterval) {
+            // 如果剩余的时间不够一次的 mCountdownInterval
+            // 下一次的延迟时间 = 总的剩余时间 - 用户的onTick花费的时间
+            delay = millisLeftAbs - lastTickDuration;
+            // 特殊情况：用户的 onTic花费了多个 mCountdownInterval 才能完成，立即触发onFinish
+            if (delay < 0) delay = 0;
+        } else {
+            // 如果剩余的时间多余 mCountdownInterval
+            //  下一次的延迟时间 =  mCountdownInterval - 用户的onTick花费的时间
+            delay = countDownTimer.mCountdownInterval - lastTickDuration;
+            // 特殊情况：用户的 onTick 花费了多个 mCountdownInterval 才能完成，直接跳至下一个有效的间隔
+            while (delay < 0) {
+                // 循加 mCountdownInterval 直到 delay >= 0
+                delay = delay + countDownTimer.mCountdownInterval;
             }
         }
-    };
+        return delay;
+    }
+
+    /**
+     * 回调 onTick() 并返回onTick方法的耗时时间
+     *
+     * @param countDownTimer
+     * @param millisLeft
+     * @return
+     */
+    private long getLastTickDuration(CustomCountDownTimer countDownTimer, long millisLeft) {
+        //上次onTick开始时间
+        long lastTickStart = SystemClock.elapsedRealtime();
+        countDownTimer.onTick(millisLeft);
+        //上次onTick结束时间
+        long lastTickEnd = SystemClock.elapsedRealtime();
+        // 考虑用户的onTick花费的时间
+        return lastTickEnd - lastTickStart;
+    }
 }
